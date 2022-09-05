@@ -1,5 +1,4 @@
 #!/bin/bash
-# newtmux.sh — Daniel Velez — 9/4/2022
 # Starts Tmux with two horizontally-split windows
 # Automatically enables logging for each pane via the "tmux-logging" plugin
 # Lowers the display message duration when toggling logging by 90%
@@ -18,7 +17,7 @@ echo -e 'set-option -g default-shell /bin/zsh\n\n# List of plugins\nset-option -
 tog_log="$HOME/.tmux/plugins/tmux-logging/scripts/toggle_logging.sh"
 
 start='display_message \"Started logging to ${logging_full_filename}\"'
-stop='display_message "Ended logging to $logging_full_filename"'
+stop='display_message \"Ended logging to $logging_full_filename\"'
 sed -i "s/$start\$/$start, 500/" $tog_log
 sed -i "s/$stop\$/$stop, 500/" $tog_log
 
