@@ -1,9 +1,9 @@
 #!/bin/bash
-# Starts Tmux with two horizontally-split windows, then swaps to first pane
+# Starts Tmux with two horizontally-split windows, then swaps to the first pane
 # Automatically enables logging for each pane via the "tmux-logging" plugin
-# Lowers the display message duration when toggling logging by 90%
+# Lowers the display message duration when toggling logging by 90% (5000 ms --> 500 ms)
 # Creates a .tmux.conf file with optimal settings (keybinds, history limit, etc.)
-# Creates a "tmux-logging-output" folder in the home directory to store log files
+# Creates a "tmux-logging-output" folder in your home directory to store log files
 
 
 if [ $# -ne 1 ]
