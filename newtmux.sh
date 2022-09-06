@@ -1,5 +1,5 @@
 #!/bin/bash
-# Starts Tmux with two horizontally-split windows
+# Starts Tmux with two horizontally-split windows, then swaps to first pane
 # Automatically enables logging for each pane via the "tmux-logging" plugin
 # Lowers the display message duration when toggling logging by 90%
 # Creates a .tmux.conf file with optimal settings (keybinds, history limit, etc.)
@@ -22,6 +22,6 @@ sed -i "s/$start\$/$start, 500/" $tog_log
 sed -i "s/$stop\$/$stop, 500/" $tog_log
 
 log="run-shell $tog_log"
-tmux new -s $1 \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log
+tmux new -s $1 \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; last-window \; swap-pane -U
 
 exit 0
