@@ -168,6 +168,7 @@ start_tmux() {
 	window_0="select-window -t 0" && pane_0="select-pane -t 0"
 	winstring=`[[ $NUM_WINDOWS -ge 2 ]] && echo "windows" || echo "window"` && pause
 	echo -e "Starting \033[33mTmux\033[0m with \033[36m$NUM_WINDOWS\033[0m horizontally-split $winstring..." && $STATUS && sleep 2
+	echo "LOGOUTPUTDIR = $LOGOUTPUTDIR"
 	case $NUM_WINDOWS in
 		1)
 			[[ $LOGOUTPUTDIR ]] && tmux set-option -g @logging-path $LOGOUTPUTDIR
