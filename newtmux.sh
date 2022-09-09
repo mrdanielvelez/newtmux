@@ -28,7 +28,7 @@ einit() {
 		read -p $'\033[32mClient Name: \033[0m' cname && cname=`tr ' ' '-' <<< $cname`
 		read -p $'\033[35mYour Initials: \033[0m' yini
 		printf '—%.0s' {1..50} && echo
-		$einit -e "$esku" -o "$onum" -c $cname -i "$yini" &>/dev/null
+		$einit -e $esku -o $onum -c $cname -i $yini &>/dev/null
 		if [[ $? -eq 0 ]]
 		then
 			pause && echo -e "\033[33mengagementinit\033[32m completed successfully.\033[0m Continuing..."
