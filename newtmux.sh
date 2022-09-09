@@ -170,14 +170,19 @@ start_tmux() {
 	echo -e "Starting \033[33mTmux\033[0m with \033[36m$NUM_WINDOWS\033[0m horizontally-split $winstring..." && $STATUS && sleep 2
 	case $NUM_WINDOWS in
 		1)
+			[[ $LOGOUTPUTDIR ]] && tmux set-option -g @logging-path $LOGOUTPUTDIR
 			tmux new -s $SESSION_NAME \; $log \; split-window \; $log \; $pane_0;;
 		2)
+			[[ $LOGOUTPUTDIR ]] && tmux set-option -g @logging-path $LOGOUTPUTDIR
 			tmux new -s $SESSION_NAME \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; $window_0 \; $pane_0;;
 		3)
+			[[ $LOGOUTPUTDIR ]] && tmux set-option -g @logging-path $LOGOUTPUTDIR
 			tmux new -s $SESSION_NAME \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; $window_0 \; $pane_0;;
 		4)
+			[[ $LOGOUTPUTDIR ]] && tmux set-option -g @logging-path $LOGOUTPUTDIR
 			tmux new -s $SESSION_NAME \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; $window_0 \; $pane_0;;
 		5)
+			[[ $LOGOUTPUTDIR ]] && tmux set-option -g @logging-path $LOGOUTPUTDIR
 			tmux new -s $SESSION_NAME \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; $window_0 \; $pane_0;;
 	esac
 	if [[ $? -eq 0 ]]
