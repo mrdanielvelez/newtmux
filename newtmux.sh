@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# newtmux.sh by Daniel Velez
 # Starts Tmux with specified number [-w] of horizontally-split windows (default 1, maximum 5)
 # Automatically enables logging for each pane via the "tmux-logging" plugin, then selects the first pane
 # Filters ANSI color codes from log output text streams via ansi2text for easy copy/paste into reports
@@ -51,35 +50,33 @@ einit() {
 install_ansi2txt() {
 	if [[ `uname` == "Darwin" ]]
 	then
-		if ! [[ `command -v ansifilter` ]]
+		if [[ `command -v ansifilter` ]]
 		then
-			echo -e "\033[33mansifilter\033[0m is\033[31m not installed.\033[0m Would you like to install it?"
-			echo -e "This enables \033[33m$SCRIPT_NAME\033[0m to remove \033[32mANSI color coding\033[0m from log files."
-			echo -n -e "\nCommand:\033[34m brew install ansifilter \033[0m\c"
+			echo -e "\033[33mansifilter\033[0m is\033[31minstalled.\033[0m Would you like to remove?"
+			echo -e "This enables \033[33m$SCRIPT_NAME\033[0m to be more accurate when removing \033[32mANSI color coding\033[0m from log files."
+			echo -n -e "\nCommand:\033[34m brew remove ansifilter \033[0m\c"
 			read -n 1 -p "[y | n] " choice && echo
 			if [[ $choice =~ y|Y ]]
 			then
-				brew install ansifilter &>/dev/null
+				brew remove ansifilter &>/dev/null
 				if [[ $? -eq 0 ]]
 				then
-					sed -i'' -e "s/ansi2txt/ansifilter/" "$HOME/.tmux/plugins/tmux-logging/scripts/start_logging.sh"
-					pause && echo -e "\n\033[33mansifilter\033[0m was successfully installed and configured. Continuing..."
+					pause && echo -e "\n\033[33mansifilter\033[0m was removed. Continuing..."
 					return 0
 				else
-					echo -e "Error — \033[33mansifilter\033[31m failed to install.\033[0m Exiting..."
+					echo -e "Error — \033[33mansifilter\033[31m failed to uninstall.\033[0m Exiting..."
 					exit 1
 				fi
 			elif [[ $choice =~ n|N ]]
 			then
-				pause && echo -e "Continuing without installing \033[33mansifilter\033[0m..."
+				pause && echo -e "Continuing without removing \033[33mansifilter\033[0m..."
 				return 0
 			else
 				echo -e "Error — \033[31mInvalid input.\033[0m Exiting..."
 				exit 1
 			fi
 		else
-			pause && echo -e "\033[33mansi2filter \033[32mis present. \033[0mContinuing..."
-			sed -i'' -e "s/ansi2txt/ansifilter/" "$HOME/.tmux/plugins/tmux-logging/scripts/start_logging.sh"
+			pause && echo -e "\033[33msed ANSI filtering \033[32mis enabled. \033[0mContinuing..."
 			return 0
 		fi
 	elif ! [[ `command -v ansi2txt` ]]
@@ -102,7 +99,7 @@ install_ansi2txt() {
 			fi
 		elif [[ $choice =~ n|N ]]
 		then
-			pause && echo -e "Continuing without installing \033[33mansi2txt\033[0m..."
+			pause && echo -e "Continuing \033[31mwithout installing \033[33mansi2txt\033[0m..."
 			return 0
 		else
 			echo -e "Error — \033[31mInvalid input.\033[0m Exiting..."
