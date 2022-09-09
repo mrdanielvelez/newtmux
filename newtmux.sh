@@ -190,11 +190,11 @@ start_tmux() {
 }
 
 help() {
-	echo -e "\033[36mUsage: \033[32m$SCRIPT_NAME \033[33m-n {tmux-session-name} \033[0m[-w {num_windows} | -e | -k | -s | -h]"
+	echo -e "\033[36mUsage: \033[32m$SCRIPT_NAME \033[33m-n {tmux-session-name} \033[0m[-w {num_windows} | -k | -s | -e | -h]"
 	echo -e "\033[36m\nMandatory argument:\033[0m"
 	echo -e " \033[33m-n\033[0m | Tmux Session Name"
 	echo -e "\033[36m\nOptional arguments:\033[0m"
-	echo -e " \033[35m-w\033[0m | Specify number of horizontally-split windows to open (default 1, maximum 5)"
+	echo -e " \033[35m-w\033[0m | Number of horizontally-split windows to open (default 1, maximum 5)"
 	echo -e " \033[35m-k\033[0m | Use the existing .tmux.conf file instead of an optimized one"
 	echo -e " \033[35m-s\033[0m | Swift and Slient mode (disables status messages)"
 	echo -e " \033[35m-e\033[0m | Run engagementinit.sh before newtmux begins (Alias required)"
