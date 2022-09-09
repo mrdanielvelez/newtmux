@@ -90,7 +90,7 @@ optimize_config() {
 			mv "$HOME/.tmux.conf" "$HOME/.tmux.conf.bak-$date" && pause && echo -e $success_msg
 		fi
 		echo -e 'set-option -g default-shell /bin/zsh\n\n# List of plugins\nset-option -g @plugin "tmux-plugins/tmux-logging"\nset-option -g @plugin "tmux-plugins/tpm"\nset-option -g @plugin "tmux-plugins/tmux-sensible"\n\n# Set command history limit\nset-option -g history-limit 250000\n\n# Disable session renaming\nset-option -g allow-rename off\n\n# Change display-time session option\nset-option -g display-time 750\n\n# Customize Tmux logging output directory\nset-option -g @logging-path "~/tmux-logging-output"\nset-option -g @screen-capture-path "~/tmux-logging-output"\n\nset-window-option -g mode-keys vi\nbind-key "c" new-window \; run-shell "~/.tmux/plugins/tmux-logging/scripts/toggle_logging.sh"\nbind-key "\"" split-window \; run-shell "~/.tmux/plugins/tmux-logging/scripts/toggle_logging.sh"\nbind-key "%" split-window -h \; run-shell "~/.tmux/plugins/tmux-logging/scripts/toggle_logging.sh"\n\n# Initialize plugins\nrun-shell "~/.tmux/plugins/tpm/tpm"\nrun-shell "~/.tmux/plugins/tmux-logging/logging.tmux"' > "$HOME/.tmux.conf"
-		if [[ -v logoutputdir ]]
+		if [[ $logoutputdir ]]
 		then
 			sed -i "s/\~\/tmux-logging-output/${logoutputdir//\//\\/}/" "$HOME/.tmux.conf"
 		elif [[ `ls | head -n 1` =~ Administrative|.*-notes-.* ]]
@@ -130,8 +130,8 @@ lower_duration() {
 }
 
 start_tmux() {
-	[[ -v NUM_WINDOWS ]] || NUM_WINDOWS=1
-	[[ -v logoutputdir ]] && cd $logoutputdir/..
+	[[ $NUM_WINDOWS ]] || NUM_WINDOWS=1
+	[[ $logoutputdir ]] && cd $logoutputdir/..
 	log="run-shell $HOME/.tmux/plugins/tmux-logging/scripts/toggle_logging.sh"
 	window_0="select-window -t 0" && pane_0="select-pane -t 0"
 	winstring=`[[ $NUM_WINDOWS -ge 2 ]] && echo "windows" || echo "window"` && pause
