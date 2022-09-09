@@ -19,7 +19,8 @@ main() {
 }
 
 einit() {
-	if alias=`grep -o -h 'alias einit.*' ~/.zshrc ~/.bashrc` || alias=`grep -o -h 'alias engagementinit.*' ~/.zshrc ~/.bashrc` || alias=`grep -o -h 'alias engagement-init.*' ~/.zshrc ~/.bashrc`
+	[[ -f ~/.zshrc ]] && file=~/.zshrc || [[ -f ~/.bashrc ]] && file=~/.zshrc
+	if alias=`grep -o -h 'alias einit.*' $file` || alias=`grep -o -h 'alias engagementinit.*' $file` || alias=`grep -o -h 'alias engagement-init.*' $file`
 	then
 		einit=`cut -d '=' -f 2 <<< $alias` && einit=`tr -d \'\" <<< $einit` && einit=${einit/#\~/$HOME}
 		read -p $'\033[36mEngagement SKU\033[0m (IPT/EPT/CPT/ADSR/RTA/etc.): ' esku
@@ -48,7 +49,40 @@ einit() {
 }
 
 install_ansi2txt() {
-	if ! [[ `command -v ansi2txt` ]]
+	if [[ `uname` == "Darwin" ]]
+	then
+		if ! [[ `command -v ansifilter` ]]
+		then
+			echo -e "\033[33mansifilter\033[0m is\033[31m not installed.\033[0m Would you like to install it?"
+			echo -e "This enables \033[33m$SCRIPT_NAME\033[0m to remove \033[32mANSI color coding\033[0m from log files."
+			echo -n -e "\nCommand:\033[34m brew install ansifilter \033[0m\c"
+			read -n 1 -p "[y | n] " choice && echo
+			if [[ $choice =~ y|Y ]]
+			then
+				brew install ansifilter &>/dev/null
+				if [[ $? -eq 0 ]]
+				then
+					sed -i "s/ansi2txt/ansifilter/" "$HOME/.tmux/plugins/tmux-logging/scripts/start_logging.sh"
+					pause && echo -e "\n\033[33mansifilter\033[0m was successfully installed and configured. Continuing..."
+					return 0
+				else
+					echo -e "Error — \033[33mansifilter\033[31m failed to install.\033[0m Exiting..."
+					exit 1
+				fi
+			elif [[ $choice =~ n|N ]]
+			then
+				pause && echo -e "Continuing without installing \033[33mansifilter\033[0m..."
+				return 0
+			else
+				echo -e "Error — \033[31mInvalid input.\033[0m Exiting..."
+				exit 1
+			fi
+		else
+			pause && echo -e "\033[33mansi2filter \033[32mis present. \033[0mContinuing..."
+			sed -i "s/ansi2txt/ansifilter/" "$HOME/.tmux/plugins/tmux-logging/scripts/start_logging.sh"
+			return 0
+		fi
+	elif ! [[ `command -v ansi2txt` ]]
 	then
 		echo -e "\033[33mansi2txt\033[0m is\033[31m not installed.\033[0m Would you like to install it?"
 		echo -e "This enables \033[33m$SCRIPT_NAME\033[0m to remove \033[32mANSI color coding\033[0m from log files."
@@ -77,6 +111,7 @@ install_ansi2txt() {
 	else
 		pause && echo -e "\033[33mansi2txt \033[32mis present. \033[0mContinuing..."
 		sed -i "s/ansifilter/ansi2txt/" "$HOME/.tmux/plugins/tmux-logging/scripts/start_logging.sh"
+		return 0
 	fi
 }
 
