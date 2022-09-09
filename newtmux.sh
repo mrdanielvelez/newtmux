@@ -62,7 +62,7 @@ install_ansi2txt() {
 				brew install ansifilter &>/dev/null
 				if [[ $? -eq 0 ]]
 				then
-					sed -i "s/ansi2txt/ansifilter/" "$HOME/.tmux/plugins/tmux-logging/scripts/start_logging.sh"
+					sed -i'' -e "s/ansi2txt/ansifilter/" "$HOME/.tmux/plugins/tmux-logging/scripts/start_logging.sh"
 					pause && echo -e "\n\033[33mansifilter\033[0m was successfully installed and configured. Continuing..."
 					return 0
 				else
@@ -79,7 +79,7 @@ install_ansi2txt() {
 			fi
 		else
 			pause && echo -e "\033[33mansi2filter \033[32mis present. \033[0mContinuing..."
-			sed -i "s/ansi2txt/ansifilter/" "$HOME/.tmux/plugins/tmux-logging/scripts/start_logging.sh"
+			sed -i'' -e "s/ansi2txt/ansifilter/" "$HOME/.tmux/plugins/tmux-logging/scripts/start_logging.sh"
 			return 0
 		fi
 	elif ! [[ `command -v ansi2txt` ]]
@@ -93,7 +93,7 @@ install_ansi2txt() {
 			sudo apt install colorized-logs &>/dev/null
 			if [[ $? -eq 0 ]]
 			then
-				sed -i "s/ansifilter/ansi2txt/" "$HOME/.tmux/plugins/tmux-logging/scripts/start_logging.sh"
+				sed -i'' -e "s/ansifilter/ansi2txt/" "$HOME/.tmux/plugins/tmux-logging/scripts/start_logging.sh"
 				pause && echo -e "\n\033[33mansi2txt\033[0m was successfully installed and configured. Continuing..."
 				return 0
 			else
@@ -110,7 +110,7 @@ install_ansi2txt() {
 		fi
 	else
 		pause && echo -e "\033[33mansi2txt \033[32mis present. \033[0mContinuing..."
-		sed -i "s/ansifilter/ansi2txt/" "$HOME/.tmux/plugins/tmux-logging/scripts/start_logging.sh"
+		sed -i'' -e "s/ansifilter/ansi2txt/" "$HOME/.tmux/plugins/tmux-logging/scripts/start_logging.sh"
 		return 0
 	fi
 }
@@ -127,12 +127,12 @@ optimize_config() {
 		echo -e 'set-option -g default-shell /bin/zsh\n\n# List of plugins\nset-option -g @plugin "tmux-plugins/tmux-logging"\nset-option -g @plugin "tmux-plugins/tpm"\nset-option -g @plugin "tmux-plugins/tmux-sensible"\n\n# Set command history limit\nset-option -g history-limit 250000\n\n# Disable session renaming\nset-option -g allow-rename off\n\n# Change display-time session option\nset-option -g display-time 750\n\n# Customize Tmux logging output directory\nset-option -g @logging-path ~/tmux-logging-output\nset-option -g @screen-capture-path ~/tmux-logging-output\n\nset-window-option -g mode-keys vi\nbind-key "c" new-window \; run-shell "~/.tmux/plugins/tmux-logging/scripts/toggle_logging.sh"\nbind-key "\"" split-window \; run-shell "~/.tmux/plugins/tmux-logging/scripts/toggle_logging.sh"\nbind-key "%" split-window -h \; run-shell "~/.tmux/plugins/tmux-logging/scripts/toggle_logging.sh"\n\n# Initialize plugins\nrun-shell "~/.tmux/plugins/tpm/tpm"\nrun-shell "~/.tmux/plugins/tmux-logging/logging.tmux"' > "$HOME/.tmux.conf"
 		if [[ $LOGOUTPUTDIR ]]
 		then
-			sed -i "s/\~\/tmux-logging-output/${LOGOUTPUTDIR//\//\\/}/" "$HOME/.tmux.conf"
+			sed -i'' -e "s/\~\/tmux-logging-output/${LOGOUTPUTDIR//\//\\/}/" "$HOME/.tmux.conf"
 		elif [[ `ls | head -n 1` =~ Administrative|.*-notes-.* ]]
 		then
 			newlogdir=`find . -type d -name "*-notes-*" -exec mkdir {}/Logging-Output \; -exec echo "{}/Logging-Output" \;`
 			LOGOUTPUTDIR=`realpath $newlogdir`
-			sed -i "s/\~\/tmux-logging-output/${LOGOUTPUTDIR//\//\\/}/" "$HOME/.tmux.conf"
+			sed -i'' -e "s/\~\/tmux-logging-output/${LOGOUTPUTDIR//\//\\/}/" "$HOME/.tmux.conf"
 		fi
 		if [[ $? -eq 0 ]]
 		then
@@ -152,8 +152,8 @@ lower_duration() {
 	duration_comment="# display_duration defaults to 5 seconds, if not passed as an argument"
 	display_duration="local display_duration=\"5000\""
 	shared="$HOME/.tmux/plugins/tmux-logging/scripts/shared.sh"
-	sed -i "s/$duration_comment\$/`sed -E 's/5 \w+/750 ms (newtmux.sh)/' <<< $duration_comment`/" $shared &>/dev/null
-	sed -i "s/$display_duration\$/`sed 's/5000/750/' <<< $display_duration`/" $shared &>/dev/null
+	sed -i'' -e "s/$duration_comment\$/`sed -E 's/5 \w+/750 ms (newtmux.sh)/' <<< $duration_comment`/" $shared &>/dev/null
+	sed -i'' -e "s/$display_duration\$/`sed 's/5000/750/' <<< $display_duration`/" $shared &>/dev/null
 	if [[ $? -eq 0 ]]
 	then
 		pause && echo -e "Message durations \033[32mwere lowered\033[0m for the \033[33m\"tmux-logging\"\033[0m plugin..."
