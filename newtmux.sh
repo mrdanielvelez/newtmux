@@ -52,7 +52,7 @@ install_ansi2txt() {
 	then
 		if [[ `command -v ansifilter` ]]
 		then
-			echo -e "\033[33mansifilter\033[0m is\033[31minstalled.\033[0m Would you like to remove?"
+			echo -e "\033[33mansifilter\033[0m \033[31mis installed.\033[0m Would you like to remove it?"
 			echo -e "This enables \033[33m$SCRIPT_NAME\033[0m to be more accurate when removing \033[32mANSI color coding\033[0m from log files."
 			echo -n -e "\nCommand:\033[34m brew remove ansifilter \033[0m\c"
 			read -n 1 -p "[y | n] " choice && echo
