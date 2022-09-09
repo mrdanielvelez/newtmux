@@ -124,12 +124,12 @@ optimize_config() {
 		echo -e 'set-option -g default-shell /bin/zsh\n\n# List of plugins\nset-option -g @plugin "tmux-plugins/tmux-logging"\nset-option -g @plugin "tmux-plugins/tpm"\nset-option -g @plugin "tmux-plugins/tmux-sensible"\n\n# Set command history limit\nset-option -g history-limit 250000\n\n# Disable session renaming\nset-option -g allow-rename off\n\n# Change display-time session option\nset-option -g display-time 750\n\n# Customize Tmux logging output directory\nset-option -g @logging-path $HOME/tmux-logging-output\nset-option -g @screen-capture-path $HOME/tmux-logging-output\n\nset-window-option -g mode-keys vi\nbind-key "c" new-window \; run-shell $HOME/.tmux/plugins/tmux-logging/scripts/toggle_logging.sh\nbind-key "\"" split-window \; run-shell $HOME/.tmux/plugins/tmux-logging/scripts/toggle_logging.sh\nbind-key "%" split-window -h \; run-shell $HOME/.tmux/plugins/tmux-logging/scripts/toggle_logging.sh\n\n# Initialize plugins\nrun-shell $HOME/.tmux/plugins/tpm/tpm\nrun-shell $HOME/.tmux/plugins/tmux-logging/logging.tmux' > "$HOME/.tmux.conf"
 		if [[ $LOGOUTPUTDIR ]]
 		then
-			sed -i'' -e "s/\$HOME\/tmux-logging-output/${LOGOUTPUTDIR//\//\\/}/" "$HOME/.tmux.conf"
+			sed -i'' -e "s/\$HOME\/tmux-logging-output/\"${LOGOUTPUTDIR//\//\\/}\"/" "$HOME/.tmux.conf"
 		elif [[ `ls | head -n 1` =~ Administrative|.*-notes-.* ]]
 		then
 			newlogdir=`find . -type d -name "*-notes-*" -exec mkdir {}/Logging-Output \; -exec echo "{}/Logging-Output" \;`
 			LOGOUTPUTDIR=`realpath $newlogdir`
-			sed -i'' -e "s/\$HOME/tmux-logging-output/${LOGOUTPUTDIR//\//\\/}/" "$HOME/.tmux.conf"
+			sed -i'' -e "s/\$HOME/tmux-logging-output/\"${LOGOUTPUTDIR//\//\\/}\"/" "$HOME/.tmux.conf"
 		fi
 		if [[ $? -eq 0 ]]
 		then
@@ -170,15 +170,15 @@ start_tmux() {
 	echo -e "Starting \033[33mTmux\033[0m with \033[36m$NUM_WINDOWS\033[0m horizontally-split $winstring..." && $STATUS && sleep 2
 	case $NUM_WINDOWS in
 		1)
-			tmux new -s $SESSION_NAME \; source-file ~/.tmux.conf \; $log \; split-window \; $log \; $pane_0;;
+			tmux new -s $SESSION_NAME \; $log \; split-window \; $log \; $pane_0;;
 		2)
-			tmux new -s $SESSION_NAME \; source-file ~/.tmux.conf \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; $window_0 \; $pane_0;;
+			tmux new -s $SESSION_NAME \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; $window_0 \; $pane_0;;
 		3)
-			tmux new -s $SESSION_NAME \; source-file ~/.tmux.conf \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; $window_0 \; $pane_0;;
+			tmux new -s $SESSION_NAME \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; $window_0 \; $pane_0;;
 		4)
-			tmux new -s $SESSION_NAME \; source-file ~/.tmux.conf \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; $window_0 \; $pane_0;;
+			tmux new -s $SESSION_NAME \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; $window_0 \; $pane_0;;
 		5)
-			tmux new -s $SESSION_NAME \; source-file ~/.tmux.conf \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; $window_0 \; $pane_0;;
+			tmux new -s $SESSION_NAME \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; $window_0 \; $pane_0;;
 	esac
 	if [[ $? -eq 0 ]]
 	then
