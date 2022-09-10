@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
+# newtmux.sh — Tmux Session and Logging Optimizer — Daniel Velez
 # Starts Tmux with specified number [-w] of horizontally-split windows (default 1, maximum 5)
 # Automatically enables logging for each pane via the "tmux-logging" plugin, then selects the first pane
-# Filters ANSI color codes from log output text streams via ansi2text for easy copy/paste into reports
+# Filters ANSI color codes from log output text streams via ansi2text/sed for easy copy/paste into reports
 # Lowers the message duration for all "tmux-logging" plugin messages by 90% (5000 ms --> 500 ms)
 # Optionally creates an optimized .tmux.conf file (keybinds, history limit, etc.) after backing up the existing one
 # Integrates with engagement-init with [-e] or if the current folder is located in a project directory tree
 # Otherwise, a "tmux-logging-output" folder is created in your home directory to store all logs and screen captures
 
 SCRIPT_NAME=`basename $0` && SCRIPT_NAME=${SCRIPT_NAME%.*}
-STATUS=true && KEEP_CONF=false
+unset LOGOUTPUTDIR && STATUS=true && KEEP_CONF=false
 
 main() {
 	install_ansi2txt
@@ -121,15 +122,15 @@ optimize_config() {
 			success_msg="Backed up previous config file to \033[36m$HOME/.tmux.conf.bak-$date\033[0m"
 			mv "$HOME/.tmux.conf" "$HOME/.tmux.conf.bak-$date" && pause && echo -e $success_msg
 		fi
-		echo -e 'set-option -g default-shell /bin/zsh\n\n# List of plugins\nset-option -g @plugin "tmux-plugins/tmux-logging"\nset-option -g @plugin "tmux-plugins/tpm"\nset-option -g @plugin "tmux-plugins/tmux-sensible"\n\n# Set command history limit\nset-option -g history-limit 250000\n\n# Disable session renaming\nset-option -g allow-rename off\n\n# Change display-time session option\nset-option -g display-time 750\n\n# Customize Tmux logging output directory\nset-option -g @logging-path $HOME/tmux-logging-output\nset-option -g @screen-capture-path $HOME/tmux-logging-output\n\nset-window-option -g mode-keys vi\nbind-key "c" new-window \; run-shell $HOME/.tmux/plugins/tmux-logging/scripts/toggle_logging.sh\nbind-key "\"" split-window \; run-shell $HOME/.tmux/plugins/tmux-logging/scripts/toggle_logging.sh\nbind-key "%" split-window -h \; run-shell $HOME/.tmux/plugins/tmux-logging/scripts/toggle_logging.sh\n\n# Initialize plugins\nrun-shell $HOME/.tmux/plugins/tpm/tpm\nrun-shell $HOME/.tmux/plugins/tmux-logging/logging.tmux' > "$HOME/.tmux.conf"
+		echo -e 'set -g default-shell /bin/zsh\n\n# List of plugins\nset -g @plugin "tmux-plugins/tmux-logging"\nset -g @plugin "tmux-plugins/tpm"\nset -g @plugin "tmux-plugins/tmux-sensible"\n\n# Set command history limit\nset -g history-limit 250000\n\n# Disable session renaming\nset -g allow-rename off\n\n# Change display-time session option\nset -g display-time 750\n\n# Customize Tmux logging output directory\nset -g @logging-path $HOME/tmux-logging-output\nset -g @screen-capture-path $HOME/tmux-logging-output\n\nset-window-option -g mode-keys vi\nbind "c" new-window \; run $HOME/.tmux/plugins/tmux-logging/scripts/toggle_logging.sh\nbind "\"" split-window \; run $HOME/.tmux/plugins/tmux-logging/scripts/toggle_logging.sh\nbind "%" split-window -h \; run $HOME/.tmux/plugins/tmux-logging/scripts/toggle_logging.sh\n\n# Initialize plugins\nrun $HOME/.tmux/plugins/tpm/tpm\nrun $HOME/.tmux/plugins/tmux-logging/logging.tmux' > "$HOME/.tmux.conf"
 		if [[ $LOGOUTPUTDIR ]]
 		then
-			sed -i'' -e "s/\$HOME\/tmux-logging-output/\"${LOGOUTPUTDIR//\//\\/}\"/" "$HOME/.tmux.conf"
+			sed -i'' -e "s/\$HOME\/tmux-logging-output/${LOGOUTPUTDIR//\//\\/}/" "$HOME/.tmux.conf"
 		elif [[ `ls | head -n 1` =~ Administrative|.*-notes-.* ]]
 		then
 			newlogdir=`find . -type d -name "*-notes-*" -exec mkdir {}/Logging-Output \; -exec echo "{}/Logging-Output" \;`
 			LOGOUTPUTDIR=`realpath $newlogdir`
-			sed -i'' -e "s/\$HOME/tmux-logging-output/\"${LOGOUTPUTDIR//\//\\/}\"/" "$HOME/.tmux.conf"
+			sed -i'' -e "s/\$HOME\/tmux-logging-output/${LOGOUTPUTDIR//\//\\/}/" "$HOME/.tmux.conf"
 		fi
 		if [[ $? -eq 0 ]]
 		then
@@ -164,26 +165,19 @@ lower_duration() {
 start_tmux() {
 	[[ $NUM_WINDOWS ]] || NUM_WINDOWS=1
 	[[ $LOGOUTPUTDIR ]] && cd $LOGOUTPUTDIR/..
-	log="run-shell $HOME/.tmux/plugins/tmux-logging/scripts/toggle_logging.sh"
-	window_0="select-window -t 0" && pane_0="select-pane -t 0"
+	log="run $HOME/.tmux/plugins/tmux-logging/scripts/toggle_logging.sh" && window_0="select-window -t 0" && pane_0="select-pane -t 0"
 	winstring=`[[ $NUM_WINDOWS -ge 2 ]] && echo "windows" || echo "window"` && pause
-	echo -e "Starting \033[33mTmux\033[0m with \033[36m$NUM_WINDOWS\033[0m horizontally-split $winstring..." && $STATUS && sleep 2
-	echo "LOGOUTPUTDIR = $LOGOUTPUTDIR"
+	echo -e "Starting \033[33mTmux\033[0m with \033[36m$NUM_WINDOWS\033[0m horizontally-split $winstring..." && $STATUS && sleep 1
 	case $NUM_WINDOWS in
 		1)
-			[[ $LOGOUTPUTDIR ]] && tmux set-option -g @logging-path $LOGOUTPUTDIR
 			tmux new -s $SESSION_NAME \; $log \; split-window \; $log \; $pane_0;;
 		2)
-			[[ $LOGOUTPUTDIR ]] && tmux set-option -g @logging-path $LOGOUTPUTDIR
 			tmux new -s $SESSION_NAME \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; $window_0 \; $pane_0;;
 		3)
-			[[ $LOGOUTPUTDIR ]] && tmux set-option -g @logging-path $LOGOUTPUTDIR
 			tmux new -s $SESSION_NAME \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; $window_0 \; $pane_0;;
 		4)
-			[[ $LOGOUTPUTDIR ]] && tmux set-option -g @logging-path $LOGOUTPUTDIR
 			tmux new -s $SESSION_NAME \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; $window_0 \; $pane_0;;
 		5)
-			[[ $LOGOUTPUTDIR ]] && tmux set-option -g @logging-path $LOGOUTPUTDIR
 			tmux new -s $SESSION_NAME \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; new-window \; $log \; split-window \; $log \; $window_0 \; $pane_0;;
 	esac
 	if [[ $? -eq 0 ]]
