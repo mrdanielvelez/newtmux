@@ -7,6 +7,7 @@
 # Optionally creates an optimized .tmux.conf file (keybinds, history limit, etc.) after backing up the existing one
 # Integrates with engagement-init with [-e] or if the current folder is located in a project directory tree
 # Otherwise, a "tmux-logging-output" folder is created in your home directory to store all logs and screen captures
+# Identifies if a valid version of Tmux is installed for proper functionality, prompts to install if not
 
 SCRIPT_NAME=`basename $0` && SCRIPT_NAME=${SCRIPT_NAME%.*}
 unset LOGOUTPUTDIR && STATUS=true && KEEP_CONF=false
@@ -15,6 +16,7 @@ main() {
 	install_ansi2txt
 	optimize_config
 	lower_duration
+	check_version
 	start_tmux
 }
 
@@ -84,11 +86,11 @@ install_ansi2txt() {
 	then
 		echo -e "\033[33mansi2txt\033[0m is\033[31m not installed.\033[0m Would you like to install it?"
 		echo -e "This enables \033[33m$SCRIPT_NAME\033[0m to remove \033[32mANSI color coding\033[0m from log files."
-		echo -n -e "\nCommand:\033[34m sudo apt install colorized-logs \033[0m\c"
+		echo -n -e "\nCommand:\033[36m sudo apt install \033[35mcolorized-logs \033[33m-y\033[0m \c"
 		read -n 1 -p "[y | n] " choice && echo
 		if [[ $choice =~ y|Y ]]
 		then
-			sudo apt install colorized-logs &>/dev/null
+			sudo apt install colorized-logs -y &>/dev/null
 			if [[ $? -eq 0 ]]
 			then
 				sed -i'' -e "s/ansifilter/ansi2txt/" "$HOME/.tmux/plugins/tmux-logging/scripts/start_logging.sh"
@@ -116,9 +118,9 @@ install_ansi2txt() {
 optimize_config() {
 	if [[ $KEEP_CONF = false ]]
 	then
-		if [[ -f "$HOME/.tmux.conf" ]]
+		if [[ -f "$HOME/.tmux.conf" && ! `openssl md5 "$HOME/.tmux.conf" | cut -d " " -f 2` == "8e588c74e5e9148ade5649eb8c951129" ]]
 		then
-			date=`date "+%Y-%m-%d"`
+			date=`date "+%F-%R"`
 			success_msg="Backed up previous config file to \033[36m$HOME/.tmux.conf.bak-$date\033[0m"
 			mv "$HOME/.tmux.conf" "$HOME/.tmux.conf.bak-$date" && pause && echo -e $success_msg
 		fi
@@ -141,7 +143,7 @@ optimize_config() {
 			return 1
 		fi
 	else
-		pause && echo -e "Using the existing\033[36m ~/.tmux.conf\033[0m file. Continuing..."
+		pause && echo -e "Using the existing\033[36m ~/.tmux.conf\033[0m file..."
 		return 0
 	fi
 }
@@ -162,11 +164,79 @@ lower_duration() {
 	fi
 }
 
+check_version () {
+	if [[ `tmux -V | tr -dC '[:digit:]'` -lt 30 ]]
+	then
+		echo -e "The \033[33mversion of Tmux\033[0m that you are using \033[31mis outdated\033[0m."
+		echo -e "This can \033[0mcause \033[35msome features\033[0m of $SCRIPT_NAME to \033[31mnot work properly\033[0m."
+		echo -e "Would you like \033[33m$SCRIPT_NAME\033[0m to \033[32minstall the latest version\033[0m?"
+		if [[ `uname` != "Darwin" ]]
+		then
+			echo -e "\nCommands:"
+			echo -e "\033[36msudo apt remove \033[35mtmux \033[33m-y"
+			echo -e "\033[36msudo apt install \033[35mlibevent-dev ncurses-dev build-essential bison pkg-config automake \033[33m-y"
+			echo -e "\033[36mgit clone \033[35mhttps://github.com/tmux/tmux.git /tmp/latest_tmux\033[0m && \033[33mcd /tmp/latest_tmux \033[0m"
+			echo -e "\033[33msh autogen.sh \033[0m&&\033[33m ./configure \033[0m&& \033[36mmake\033[0m && \033[36msudo make install\033[0m"
+			echo && read -n 1 -p "[y | n] " choice && echo
+			if [[ $choice =~ y|Y ]]
+			then
+				pause && echo "Updating Tmux. Please wait..."
+				sudo apt remove tmux -y &>/dev/null
+				sudo apt install libevent-dev ncurses-dev build-essential bison pkg-config automake -y &>/dev/null
+				git clone https://github.com/tmux/tmux.git /tmp/latest_tmux &>/dev/null && cd /tmp/latest_tmux
+				sh autogen.sh &>/dev/null && ./configure &>/dev/null && make &>/dev/null && sudo make install &>/dev/null
+				if [[ $? -eq 0 ]]
+				then
+					rm -rf /tmp/latest_tmux
+					pause && echo -e "\n\033[33mTmux\033[0m was successfully installed. Continuing..."
+					return 0
+				else
+					echo -e "Error — \033[33mTmux\033[31m failed to install.\033[0m Exiting..."
+					exit 1
+				fi
+			elif [[ $choice =~ n|N ]]
+			then
+				pause && echo -e "Continuing \033[31mwithout updating \033[33mTmux\033[0m..."
+				return 0
+			else
+				echo -e "Error — \033[31mInvalid input.\033[0m Exiting..."
+				exit 1
+			fi
+		else
+			echo -e "\nCommands:"
+			echo -e "\033[36mbrew update\033[33m"
+			echo -e "\033[36mbrew install \033[35mtmux\033[0m"
+			echo && read -n 1 -p "[y | n] " choice && echo
+			if [[ $choice =~ y|Y ]]
+			then
+				pause && echo "Updating Tmux. Please wait..."
+				brew update &>/dev/null
+				brew install tmux &>/dev/null
+				if [[ $? -eq 0 ]]
+				then
+					pause && echo -e "\n\033[33mTmux\033[0m was successfully installed. Continuing..."
+					return 0
+				else
+					echo -e "Error — \033[33mTmux\033[31m failed to install.\033[0m Exiting..."
+					exit 1
+				fi
+			elif [[ $choice =~ n|N ]]
+			then
+				pause && echo -e "Continuing \033[31mwithout updating \033[33mTmux\033[0m..."
+				return 0
+			else
+				echo -e "Error — \033[31mInvalid input.\033[0m Exiting..."
+				exit 1
+			fi
+		fi
+	fi
+}
+
 start_tmux() {
 	[[ $NUM_WINDOWS ]] || NUM_WINDOWS=1
 	[[ $LOGOUTPUTDIR ]] && cd $LOGOUTPUTDIR/..
-	log="run $HOME/.tmux/plugins/tmux-logging/scripts/toggle_logging.sh" && window_0="select-window -t 0" && pane_0="select-pane -t 0"
-	winstring=`[[ $NUM_WINDOWS -ge 2 ]] && echo "windows" || echo "window"` && pause
+	log="run $HOME/.tmux/plugins/tmux-logging/scripts/toggle_logging.sh" && pause
+	window_0="select-window -t 0" && pane_0="select-pane -t 0" && winstring=`[[ $NUM_WINDOWS -ge 2 ]] && echo "windows" || echo "window"`
 	echo -e "Starting \033[33mTmux\033[0m with \033[36m$NUM_WINDOWS\033[0m horizontally-split $winstring..." && $STATUS && sleep 1
 	case $NUM_WINDOWS in
 		1)
@@ -199,7 +269,7 @@ help() {
 	echo -e " \033[35m-s\033[0m | Swift and Slient mode (disables status messages)"
 	echo -e " \033[35m-e\033[0m | Run engagementinit.sh before newtmux begins (Alias required)"
 	echo -e " \033[35m-h\033[0m | Display this help menu"
-	echo -e "\n\033[36mExample execution (with an alias in ~/.zshrc or ~/.bashrc):"
+	echo -e "\n\033[36mExample execution (with an alias set):"
 	echo -e " \033[32m$SCRIPT_NAME \033[33m-n\033[0m flast \033[35m-w\033[0m 2 \033[35m-e\033[0m"
 	return 0
 }
