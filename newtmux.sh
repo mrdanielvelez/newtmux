@@ -167,7 +167,7 @@ lower_duration() {
 check_version () {
 	if [[ `tmux -V | tr -dC '[:digit:]'` -lt 30 ]]
 	then
-		echo -e "The \033[33mversion of Tmux\033[0m that you are using \033[31mis outdated\033[0m."
+		echo -e "\nThe \033[33mversion of Tmux\033[0m that you are using \033[31mis outdated\033[0m."
 		echo -e "This can \033[0mcause \033[35msome features\033[0m of $SCRIPT_NAME to \033[31mnot work properly\033[0m."
 		echo -e "Would you like \033[33m$SCRIPT_NAME\033[0m to \033[32minstall the latest version\033[0m?"
 		if [[ `uname` != "Darwin" ]]
