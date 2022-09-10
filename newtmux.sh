@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# newtmux.sh — Tmux Session and Logging Optimizer — Daniel Velez
+# newtmux.sh — Tmux Session and Logging Optimizer — Version 2.0 — Daniel Velez
 # Starts Tmux with specified number [-w] of horizontally-split windows (default 1, maximum 5)
 # Automatically enables logging for each pane via the "tmux-logging" plugin, then selects the first pane
 # Filters ANSI color codes from log output text streams via ansi2text/sed for easy copy/paste into reports
@@ -187,9 +187,10 @@ check_version () {
 				sh autogen.sh &>/dev/null && ./configure &>/dev/null && make &>/dev/null && sudo make install &>/dev/null
 				if [[ $? -eq 0 ]]
 				then
-					rm -rf /tmp/latest_tmux
-					pause && echo -e "\n\033[33mTmux\033[0m was successfully installed. Continuing..."
-					return 0
+					rm -rf /tmp/latest_tmux && pause && clear
+					echo -e "\033[33mTmux\033[0m was \033[32msuccessfully updated.\033[0m Exiting..."
+					echo -e "Please re-run \033[33m$SCRIPT_NAME\033[0m with the same arguments.\n"
+					exit 0
 				else
 					echo -e "Error — \033[33mTmux\033[31m failed to install.\033[0m Exiting..."
 					exit 1
@@ -205,17 +206,19 @@ check_version () {
 		else
 			echo -e "\nCommands:"
 			echo -e "\033[36mbrew update\033[33m"
-			echo -e "\033[36mbrew install \033[35mtmux\033[0m"
+			echo -e "\033[36mbrew upgrade\033[0m"
 			echo && read -n 1 -p "[y | n] " choice && echo
 			if [[ $choice =~ y|Y ]]
 			then
 				pause && echo "Updating Tmux. Please wait..."
 				brew update &>/dev/null
-				brew install tmux &>/dev/null
+				brew upgrade &>/dev/null
 				if [[ $? -eq 0 ]]
 				then
-					pause && echo -e "\n\033[33mTmux\033[0m was successfully installed. Continuing..."
-					return 0
+					pause && clear
+					echo -e "\033[33mTmux\033[0m was \033[32msuccessfully updated.\033[0m Exiting..."
+					echo -e "Please re-run \033[33m$SCRIPT_NAME\033[0m with the same arguments.\n"
+					exit 0
 				else
 					echo -e "Error — \033[33mTmux\033[31m failed to install.\033[0m Exiting..."
 					exit 1
