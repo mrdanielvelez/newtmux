@@ -138,11 +138,14 @@ detect_tmux_logging() {
 		read -n 1 -p "[y | n] " choice && echo
 		if [[ $choice =~ y|Y ]]
 		then
-			echo "set -g @plugin 'tmux-plugins/tpm'\nset -g @plugin 'tmux-plugins/tmux-sensible'\nset -g @plugin 'tmux-plugins/tmux-logging'\nrun '~/.tmux/plugins/tpm/tpm'" > /tmp/install-tmux-plugins
-			tmux new -s install_plugins \; source-file /tmp/install-tmux-plugins \; run ~/.tmux/plugins/tpm/scripts/install_plugins.sh \; run -d 5 source-file ~/.tmux.conf \; run -d 1 -C kill-session &>/dev/null
+			[[ -d ~/.tmux/plugins/tpm ]] || git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+			[[ -f ~/.tmux.conf ]] && mv ~/.tmux.conf ~/.tmux.conf.bak.newtmux
+			echo -e "set -g @plugin 'tmux-plugins/tpm'\nset -g @plugin 'tmux-plugins/tmux-sensible'\nset -g @plugin 'tmux-plugins/tmux-logging'\nrun ~/.tmux/plugins/tpm/tpm" > ~/.tmux.conf
+			tmux new -s install_plugins \; run ~/.tmux/plugins/tpm/scripts/install_plugins.sh \; run -d 8 -C kill-session
 			if [[ $? -eq 0 ]]
 			then
 				pause && echo -e "\n\033[33mtmux-logging\033[0m was installed. Continuing..."
+				[[ -f ~/.tmux.conf.bak.newtmux ]] && mv ~/.tmux.conf.bak.newtmux ~/.tmux.conf
 				return 0
 			else
 				echo -e "Error — \033[33mtmux-logging\033[31m failed to install\033[0m. Exiting..."
