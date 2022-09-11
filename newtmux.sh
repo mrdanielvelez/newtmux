@@ -1,27 +1,29 @@
 #!/usr/bin/env bash
-# newtmux.sh — Tmux Session and Logging Optimizer — Version 2.0 — Daniel Velez
+# newtmux.sh — Tmux Session & Logging Optimizer — Version 2.0 — Created by Daniel Velez
 # Starts Tmux with specified number [-w] of horizontally-split windows (default 1, maximum 5)
 # Automatically enables logging for each pane via the "tmux-logging" plugin, then selects the first pane
 # Filters ANSI color codes from log output text streams via ansi2text/sed for easy copy/paste into reports
 # Lowers the message duration for all "tmux-logging" plugin messages by 90% (5000 ms --> 500 ms)
-# Optionally creates an optimized .tmux.conf file (keybinds, history limit, etc.) after backing up the existing one
+# Creates an optimized Tmux config file (keybinds, history limit, etc.) after backing up the existing one
 # Integrates with engagement-init with [-e] or if the current folder is located in a project directory tree
 # Otherwise, a "tmux-logging-output" folder is created in your home directory to store all logs and screen captures
-# Identifies if a valid version of Tmux is installed for proper functionality, prompts to install if not
+# Detects whether or not the "tmux-logging" plugin is installed, prompts to install it automatically if not
+# Identifies if a compatible version of Tmux is installed, prompts to update Tmux automatically if not
 
 SCRIPT_NAME=`basename $0` && SCRIPT_NAME=${SCRIPT_NAME%.*}
 unset LOGOUTPUTDIR && STATUS=true && KEEP_CONF=false
 
 main() {
+	check_version
+	detect_tmux_logging
 	install_ansi2txt
 	optimize_config
 	lower_duration
-	check_version
 	start_tmux
 }
 
 einit() {
-	[[ -f ~/.zshrc ]] && file=~/.zshrc || [[ -f ~/.bashrc ]] && file=~/.zshrc
+	file=~/.zshrc && [[ -f ~/.zshrc ]] || file=~/.bashrc && [[ -f ~/.bashrc ]]
 	if alias=`grep -o -h 'alias einit.*' $file` || alias=`grep -o -h 'alias engagementinit.*' $file` || alias=`grep -o -h 'alias engagement-init.*' $file`
 	then
 		einit=`cut -d '=' -f 2 <<< $alias` && einit=`tr -d \'\" <<< $einit` && einit=${einit/#\~/$HOME}
@@ -47,6 +49,113 @@ einit() {
 		echo -e "\033[33mengagementinit\033[31m could not be located\033[0m as an alias."
 		echo -e "(\033[36meinit\033[0m, \033[36mengagementinit\033[0m, \033[36mengagement-init\033[0m). Continuing..."
 		return 1
+	fi
+}
+
+check_version () {
+	if [[ `tmux -V | tr -dC '[:digit:]'` -lt 30 ]]
+	then
+		echo -e "\nThe \033[33mversion of Tmux\033[0m that you are using \033[31mis outdated\033[0m."
+		echo -e "This can \033[0mcause \033[35msome features\033[0m of $SCRIPT_NAME to \033[31mnot work properly\033[0m."
+		echo -e "Would you like \033[33m$SCRIPT_NAME\033[0m to \033[32minstall the latest version\033[0m?"
+		echo -e "All existing \033[33mTmux\033[0m sessions \033[31mwill be killed\033[0m before the update is initiated."
+		if [[ `uname` != "Darwin" ]]
+		then
+			echo -e "\nCommands:"
+			echo -e "\033[36msudo apt remove \033[35mtmux \033[33m-y"
+			echo -e "\033[36msudo apt install \033[35mlibevent-dev ncurses-dev build-essential bison pkg-config automake \033[33m-y"
+			echo -e "\033[36mgit clone \033[35mhttps://github.com/tmux/tmux.git /tmp/latest_tmux\033[0m && \033[33mcd /tmp/latest_tmux \033[0m"
+			echo -e "\033[33msh autogen.sh \033[0m&&\033[33m ./configure \033[0m&& \033[36mmake\033[0m && \033[36msudo make install\033[0m"
+			echo && read -n 1 -p "[y | n] " choice && echo
+			if [[ $choice =~ y|Y ]]
+			then
+				pause && echo "Updating Tmux. Please wait..." && tmux kill-server &>/dev/null
+				sudo apt remove tmux -y &>/dev/null
+				sudo apt install libevent-dev ncurses-dev build-essential bison pkg-config automake -y &>/dev/null
+				git clone https://github.com/tmux/tmux.git /tmp/latest_tmux &>/dev/null && cd /tmp/latest_tmux
+				sh autogen.sh &>/dev/null && ./configure &>/dev/null && make &>/dev/null && sudo make install &>/dev/null
+				if [[ $? -eq 0 ]]
+				then
+					rm -rf /tmp/latest_tmux && pause && clear
+					echo -e "\033[33mTmux\033[0m was \033[32msuccessfully updated.\033[0m Exiting..."
+					echo -e "Please re-run \033[33m$SCRIPT_NAME\033[0m with the same arguments.\n"
+					exit 0
+				else
+					echo -e "Error — \033[33mTmux\033[31m failed to install.\033[0m Exiting..."
+					exit 1
+				fi
+			elif [[ $choice =~ n|N ]]
+			then
+				pause && echo -e "Continuing \033[31mwithout updating \033[33mTmux\033[0m..."
+				return 0
+			else
+				echo -e "Error — \033[31mInvalid input.\033[0m Exiting..."
+				exit 1
+			fi
+		else
+			echo -e "\nCommands:"
+			echo -e "\033[36mbrew update\033[33m"
+			echo -e "\033[36mbrew upgrade\033[0m"
+			echo && read -n 1 -p "[y | n] " choice && echo
+			if [[ $choice =~ y|Y ]]
+			then
+				pause && echo "Updating Tmux. Please wait..." && tmux kill-server &>/dev/null
+				brew update &>/dev/null
+				brew upgrade &>/dev/null
+				if [[ $? -eq 0 ]]
+				then
+					pause && clear
+					echo -e "\033[33mTmux\033[0m was \033[32msuccessfully updated.\033[0m Exiting..."
+					echo -e "Please re-run \033[33m$SCRIPT_NAME\033[0m with the same arguments.\n"
+					exit 0
+				else
+					echo -e "Error — \033[33mTmux\033[31m failed to install.\033[0m Exiting..."
+					exit 1
+				fi
+			elif [[ $choice =~ n|N ]]
+			then
+				pause && echo -e "Continuing \033[31mwithout updating \033[33mTmux\033[0m..."
+				return 0
+			else
+				echo -e "Error — \033[31mInvalid input.\033[0m Exiting..."
+				exit 1
+			fi
+		fi
+	fi
+}
+
+detect_tmux_logging() {
+	if [ "$TERM_PROGRAM" == "tmux" ]
+	then
+	  echo -e "Error — \033[32m$SCRIPT_NAME \033[31mcannot be executed \033[0minside of a \033[35mTmux\033[0m session."
+	  echo -e "Please \033[31mdetach from \033[0mor\033[31m kill\033[0m your current \033[35mTmux\033[0m session and re-run \033[32m$SCRIPT_NAME\033[0m..."
+	  exit 1
+	fi
+	if ! [[ -d ~/.tmux/plugins/tmux-logging ]]
+	then
+		echo -e "\033[33mtmux-logging\033[0m was \033[31mnot detected\033[0m, but is \033[31mrequired\033[0m."
+		echo -e "Would you like \033[35m$SCRIPT_NAME\033[0m to \033[32minstall it automatically\033[0m?"
+		read -n 1 -p "[y | n] " choice && echo
+		if [[ $choice =~ y|Y ]]
+		then
+			echo "set -g @plugin 'tmux-plugins/tpm'\nset -g @plugin 'tmux-plugins/tmux-sensible'\nset -g @plugin 'tmux-plugins/tmux-logging'\nrun '~/.tmux/plugins/tpm/tpm'" > /tmp/install-tmux-plugins
+			tmux new -s install_plugins \; source-file /tmp/install-tmux-plugins \; run ~/.tmux/plugins/tpm/scripts/install_plugins.sh \; run -d 5 source-file ~/.tmux.conf \; run -d 1 -C kill-session &>/dev/null
+			if [[ $? -eq 0 ]]
+			then
+				pause && echo -e "\n\033[33mtmux-logging\033[0m was installed. Continuing..."
+				return 0
+			else
+				echo -e "Error — \033[33mtmux-logging\033[31m failed to install\033[0m. Exiting..."
+				exit 1
+			fi
+		elif [[ $choice =~ n|N ]]
+		then
+			echo -e "Error — \033[33mtmux-logging\033[31m must be installed\033[0m. Exiting..."
+			return 0
+		else
+			echo -e "Error — \033[31mInvalid input.\033[0m Exiting..."
+			exit 1
+		fi
 	fi
 }
 
@@ -94,7 +203,7 @@ install_ansi2txt() {
 			if [[ $? -eq 0 ]]
 			then
 				sed -i'' -e "s/ansifilter/ansi2txt/" "$HOME/.tmux/plugins/tmux-logging/scripts/start_logging.sh"
-				pause && echo -e "\n\033[33mansi2txt\033[0m was successfully installed and configured. Continuing..."
+				pause && echo -e "\n\033[33mansi2txt\033[0m was \033[32minstalled and configured\033[0m. Continuing..."
 				return 0
 			else
 				echo -e "Error — \033[33mansi2txt\033[31m failed to install.\033[0m Exiting..."
@@ -164,77 +273,6 @@ lower_duration() {
 	fi
 }
 
-check_version () {
-	if [[ `tmux -V | tr -dC '[:digit:]'` -lt 30 ]]
-	then
-		echo -e "\nThe \033[33mversion of Tmux\033[0m that you are using \033[31mis outdated\033[0m."
-		echo -e "This can \033[0mcause \033[35msome features\033[0m of $SCRIPT_NAME to \033[31mnot work properly\033[0m."
-		echo -e "Would you like \033[33m$SCRIPT_NAME\033[0m to \033[32minstall the latest version\033[0m?"
-		if [[ `uname` != "Darwin" ]]
-		then
-			echo -e "\nCommands:"
-			echo -e "\033[36msudo apt remove \033[35mtmux \033[33m-y"
-			echo -e "\033[36msudo apt install \033[35mlibevent-dev ncurses-dev build-essential bison pkg-config automake \033[33m-y"
-			echo -e "\033[36mgit clone \033[35mhttps://github.com/tmux/tmux.git /tmp/latest_tmux\033[0m && \033[33mcd /tmp/latest_tmux \033[0m"
-			echo -e "\033[33msh autogen.sh \033[0m&&\033[33m ./configure \033[0m&& \033[36mmake\033[0m && \033[36msudo make install\033[0m"
-			echo && read -n 1 -p "[y | n] " choice && echo
-			if [[ $choice =~ y|Y ]]
-			then
-				pause && echo "Updating Tmux. Please wait..."
-				sudo apt remove tmux -y &>/dev/null
-				sudo apt install libevent-dev ncurses-dev build-essential bison pkg-config automake -y &>/dev/null
-				git clone https://github.com/tmux/tmux.git /tmp/latest_tmux &>/dev/null && cd /tmp/latest_tmux
-				sh autogen.sh &>/dev/null && ./configure &>/dev/null && make &>/dev/null && sudo make install &>/dev/null
-				if [[ $? -eq 0 ]]
-				then
-					rm -rf /tmp/latest_tmux && pause && clear
-					echo -e "\033[33mTmux\033[0m was \033[32msuccessfully updated.\033[0m Exiting..."
-					echo -e "Please re-run \033[33m$SCRIPT_NAME\033[0m with the same arguments.\n"
-					exit 0
-				else
-					echo -e "Error — \033[33mTmux\033[31m failed to install.\033[0m Exiting..."
-					exit 1
-				fi
-			elif [[ $choice =~ n|N ]]
-			then
-				pause && echo -e "Continuing \033[31mwithout updating \033[33mTmux\033[0m..."
-				return 0
-			else
-				echo -e "Error — \033[31mInvalid input.\033[0m Exiting..."
-				exit 1
-			fi
-		else
-			echo -e "\nCommands:"
-			echo -e "\033[36mbrew update\033[33m"
-			echo -e "\033[36mbrew upgrade\033[0m"
-			echo && read -n 1 -p "[y | n] " choice && echo
-			if [[ $choice =~ y|Y ]]
-			then
-				pause && echo "Updating Tmux. Please wait..."
-				brew update &>/dev/null
-				brew upgrade &>/dev/null
-				if [[ $? -eq 0 ]]
-				then
-					pause && clear
-					echo -e "\033[33mTmux\033[0m was \033[32msuccessfully updated.\033[0m Exiting..."
-					echo -e "Please re-run \033[33m$SCRIPT_NAME\033[0m with the same arguments.\n"
-					exit 0
-				else
-					echo -e "Error — \033[33mTmux\033[31m failed to install.\033[0m Exiting..."
-					exit 1
-				fi
-			elif [[ $choice =~ n|N ]]
-			then
-				pause && echo -e "Continuing \033[31mwithout updating \033[33mTmux\033[0m..."
-				return 0
-			else
-				echo -e "Error — \033[31mInvalid input.\033[0m Exiting..."
-				exit 1
-			fi
-		fi
-	fi
-}
-
 start_tmux() {
 	[[ $NUM_WINDOWS ]] || NUM_WINDOWS=1
 	[[ $LOGOUTPUTDIR ]] && cd $LOGOUTPUTDIR/..
@@ -263,6 +301,7 @@ start_tmux() {
 }
 
 help() {
+	echo -e "[\033[36mTmux Session & Logging Optimizer \033[0m— \033[32mVersion 2.0\033[0m]\n"
 	echo -e "\033[36mUsage: \033[32m$SCRIPT_NAME \033[33m-n {tmux-session-name} \033[0m[-w {num_windows} | -k | -s | -e | -h]"
 	echo -e "\033[36m\nMandatory argument:\033[0m"
 	echo -e " \033[33m-n\033[0m | Tmux Session Name"
