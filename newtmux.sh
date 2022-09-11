@@ -36,10 +36,9 @@ einit() {
 		if [[ $? -eq 0 ]]
 		then
 			pause && echo -e "\033[33mengagementinit\033[32m completed successfully.\033[0m Continuing..."
-			project="`pwd`/$cname-$onum-$esku"
-			if [[ -d "$project-02" ]]; then pdir="$project-02"; else pdir="$project-01"; fi
-			LOGOUTPUTDIR="$pdir/Evidence/$cname-notes-$yini/Logging-Output"
-			mkdir "$LOGOUTPUTDIR" &>/dev/null
+			project="`pwd`/$cname-$onum-$esku" && if [[ -d "$project-02" ]]; then pdir="$project-02"; else pdir="$project-01"; fi
+			mkdir "$pdir/Evidence/$cname-notes-$yini/Logging-Output" "$HOME/Projects" &>/dev/null
+			ln -s "$pdir" "$HOME/Projects/$cname-$onum-$esku" && LOGOUTPUTDIR="$HOME/Projects/$cname-$onum-$esku/Evidence/$cname-notes-$yini/Logging-Output"
 			return 0
 		else
 			echo -e "\033[33mengagementinit\033[31m failed to complete\033[0m Continuing..."
@@ -312,7 +311,7 @@ help() {
 	echo -e " \033[35m-w\033[0m | Number of horizontally-split windows to open (default 1, maximum 5)"
 	echo -e " \033[35m-k\033[0m | Use the existing .tmux.conf file instead of an optimized one"
 	echo -e " \033[35m-s\033[0m | Swift and Slient mode (disables status messages)"
-	echo -e " \033[35m-e\033[0m | Run engagementinit.sh before newtmux begins (Alias required)"
+	echo -e " \033[35m-e\033[0m | Run engagementinit and create a symlink (Alias required)"
 	echo -e " \033[35m-h\033[0m | Display this help menu"
 	echo -e "\n\033[36mExample execution (with an alias set):"
 	echo -e " \033[32m$SCRIPT_NAME \033[33m-n\033[0m flast \033[35m-w\033[0m 2 \033[35m-e\033[0m"

@@ -10,7 +10,7 @@
 * Detects whether or not the "tmux-logging" plugin is installed, prompts to install it automatically if not
 * Identifies if a compatible version of Tmux is installed, prompts to update Tmux automatically if not
 
-![newtmux Demo 1](https://user-images.githubusercontent.com/85040841/189546780-5dc20636-7354-45d5-a158-eca049c76fc9.gif)
+![newtmux Demo](https://user-images.githubusercontent.com/85040841/189549863-cb93a285-10eb-4424-bffc-88d0822a16b5.gif)
 
     $ newtmux -h               
     [Tmux Session & Logging Optimizer — Version 2.0]
@@ -24,7 +24,7 @@
      -w | Number of horizontally-split windows to open (default 1, maximum 5)
      -k | Use the existing .tmux.conf file instead of an optimized one
      -s | Swift and Slient mode (disables status messages)
-     -e | Run engagementinit.sh before newtmux begins (Alias required)
+     -e | Run engagementinit and create a symlink (Alias required)
      -h | Display this help menu
 
     Example execution (with an alias set):
