@@ -41,7 +41,7 @@ einit() {
 			ln -s "$pdir" "$HOME/Projects/$cname-$onum-$esku" && LOGOUTPUTDIR="$HOME/Projects/$cname-$onum-$esku/Evidence/$cname-notes-$yini/Logging-Output"
 			return 0
 		else
-			echo -e "\033[33mengagementinit\033[31m failed to complete\033[0m Continuing..."
+			echo -e "\033[33mengagementinit\033[31m failed to complete\033[0m. Do you have\033[31m the latest version\033[0m? Continuing..."
 			return 1
 		fi
 	else
