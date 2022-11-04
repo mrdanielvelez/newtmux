@@ -229,7 +229,7 @@ install_ansi2txt() {
 optimize_config() {
 	if [[ $KEEP_CONF == false ]]
 	then
-		if [[ -f "$HOME/.tmux.conf" && ! `openssl md5 "$HOME/.tmux.conf" | cut -d " " -f 2` == "8e588c74e5e9148ade5649eb8c951129" ]]
+		if [[ -f "$HOME/.tmux.conf" && ! `openssl md5 "$HOME/.tmux.conf" | cut -d " " -f 2` == "1612c020abdd7517c59914ff42f57037" ]]
 		then
 			date=`date "+%F-%R"`
 			success_msg="Backed up previous config file to \033[36m$HOME/.tmux.conf.bak-$date\033[0m"
