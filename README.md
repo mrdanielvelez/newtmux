@@ -29,3 +29,18 @@
 
     Example execution (with an alias set):
      newtmux -n flast -w 2 -e
+
+# Obtaining Missing Evidence from Tmux Logs
+If you're missing evidence while reporting, the best way to look for the output of a command you forgot to take notes of is by running the following command within the ~/tmux-logging-output directory:
+```
+cat * | less -r
+```
+Then type slash (`/`) and a keyword of the command you'd like to see the output of (e.g. ntlmrelayx) — `/ntlmrelayx` — press `Enter` — then press `n` or `N` (lower/upper) to go forward and back, respectively.
+
+This will search through your Tmux command history for the entire penetration test. The `-r` flag is necessary to clear up any raw control characters and get a clean output within less.
+
+The reason we are piping all of the files into less from cat as opposed to running `less -r *` is to avoid separate pages for each log file. This enables us to easily search through everything that was logged.
+
+If you need results from a specific day you can easily distill the evidence by modifying the command to only cat certain files based on their names. And if you always execute a certain tool within a specific Tmux pane, the filenames can help out with discovery since they include pane numbers and session names.
+
+Once you find what you're looking for, select the content and press `CTRL+SHIFT+C` to copy it to your clipboard from less. Alternatively, right-click to open the feature menu and select Copy Selection.
